@@ -85,5 +85,34 @@ router.get('/', async (req, res) => {
     return res.status(500).json({ error: err.response?.data || err.message });
   }
 });
+router.get('/stats', async (req, res) => {
+  try {
+    const { access_token } = req.query;
+    if (!access_token) return res.status(400).json({ error: 'Missing access_token' });
+
+    // mock/simple si USE_MOCK
+    if (process.env.USE_MOCK === 'true') {
+      return res.json({
+        timeseries: [
+          { day: '2025-09-10', views: 120, likes: 45 },
+          { day: '2025-09-11', views: 200, likes: 70 },
+          { day: '2025-09-12', views: 150, likes: 55 },
+        ],
+        summary: {
+          followers: 1200,
+          total_videos: 15,
+          engagement: 12.5
+        }
+      });
+    }
+
+    // Llamadas reales a TikTok API (pseudo-código)
+    // const metrics = await getTikTokMetrics(access_token);
+    // res.json(metrics);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;
