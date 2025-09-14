@@ -41,14 +41,28 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 const querystring = require('querystring');
+const crypto = require('crypto');
 
 const CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
 const CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI; // debe coincidir con lo que registres en TikTok
 
+
+function generateCodeVerifier() {
+  return crypto.randomBytes(32).toString('base64url');
+}
+
+function generateCodeChallenge(verifier) {
+  return crypto.createHash('sha256').update(verifier).digest('base64url');
+}
+
 router.get('/login', (req, res) => {
+  
+  const code_verifier = generateCodeVerifier();
+  const code_challenge = generateCodeChallenge(code_verifier);
+  req.session.code_verifier = code_verifier;
   const scope = 'user.info.basic,video.upload,video.publish'; // ajusta scopes necesarios
-  const url = `https://www.tiktok.com/v2/auth/authorize/?client_key=${CLIENT_KEY}&scope=${encodeURIComponent(scope)}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+  const url = `https://www.tiktok.com/v2/auth/authorize/?client_key=${CLIENT_KEY}&scope=${encodeURIComponent(scope)}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&code_challenge=${code_challenge}&code_challenge_method=S256`;
   return res.redirect(url);
 });
 
@@ -76,6 +90,7 @@ router.get('/login', (req, res) => {
 // });
 router.get('/callback', async (req, res) => {
   const { code } = req.query;
+  const code_verifier = req.session.code_verifier;
   if (!code) return res.status(400).send('missing code');
 
   try {
@@ -87,22 +102,37 @@ router.get('/callback', async (req, res) => {
         code,
         grant_type: "authorization_code",
         redirect_uri: REDIRECT_URI,
+        code_verifier
       }),
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
 
     const { access_token, open_id } = tokenRes.data || {};
-    // return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?open_id=${open_id}`);
-      //  return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?open_id=${open_id}&token=${access_token}`);
-       if (open_id) {
-  return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard?open_id=${open_id}&token=${access_token}`);
-} else {
-  return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard?token=${access_token}`);
-}
+    if (open_id) {
+    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard?open_id=${open_id}&token=${access_token}`);
+    } else {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard?token=${access_token}`);
+    }
 
   } catch (err) {
     console.error("callback err", err.response?.data || err.message);
     return res.status(500).send("Callback error");
+  }
+});
+router.get('/user-info', async (req, res) => {
+  const { token, open_id } = req.query;
+
+  try {
+    const userInfo = await axios.get(
+      `https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name,avatar_url`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    res.json(userInfo.data);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
