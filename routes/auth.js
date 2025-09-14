@@ -40,7 +40,7 @@
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
-import querystring from "querystring";
+const querystring = require('querystring');
 
 const CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
 const CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET;
