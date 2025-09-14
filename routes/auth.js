@@ -95,9 +95,9 @@ router.get('/callback', async (req, res) => {
     // return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?open_id=${open_id}`);
       //  return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?open_id=${open_id}&token=${access_token}`);
        if (open_id) {
-  return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?open_id=${open_id}&token=${access_token}`);
+  return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard?open_id=${open_id}&token=${access_token}`);
 } else {
-  return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?token=${access_token}`);
+  return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard?token=${access_token}`);
 }
 
   } catch (err) {
