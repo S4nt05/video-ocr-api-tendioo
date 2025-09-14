@@ -93,7 +93,7 @@ router.get('/callback', async (req, res) => {
       }),
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
-
+    console.log("TikTok full token response:", tokenRes.data);
     const { access_token, open_id } = tokenRes.data.data || {};
 
     // Si no hay open_id, usamos access_token como identificador temporal
