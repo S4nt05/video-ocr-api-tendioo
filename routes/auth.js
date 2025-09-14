@@ -57,24 +57,21 @@ router.get('/login', (req, res) => {
 //   if (!code) return res.status(400).send('missing code');
 
 //   try {
-//     const tokenRes = await axios.post(
-//       "https://open.tiktokapis.com/v2/oauth/token/",
-//       querystring.stringify({
-//         client_key: CLIENT_KEY,
-//         client_secret: CLIENT_SECRET,
-//         code,
-//         grant_type: "authorization_code",
-//         redirect_uri: REDIRECT_URI,
-//       }),
-//       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-//     );
+//     const tokenRes = await axios.post('https://open.tiktok.com/oauth/access_token/', {
+//       client_key: CLIENT_KEY,
+//       client_secret: CLIENT_SECRET,
+//       code,
+//       grant_type: 'authorization_code',
+//       redirect_uri: REDIRECT_URI
+//     }, { headers: { 'Content-Type': 'application/json' } });
 
 //     const { access_token, open_id } = tokenRes.data.data || {};
-//     // return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?open_id=${open_id}`);
-//        return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?open_id=${open_id}&token=${access_token}`);
+//     // GUARDA access_token y open_id (en DB) asociado al usuario
+//     // Luego redirige al frontend con datos mínimos:
+//     return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?open_id=${open_id}`);
 //   } catch (err) {
-//     console.error("callback err", err.response?.data || err.message);
-//     return res.status(500).send("Callback error");
+//     console.error('callback err', err.response?.data || err.message);
+//     return res.status(500).send('Callback error');
 //   }
 // });
 router.get('/callback', async (req, res) => {
@@ -93,15 +90,15 @@ router.get('/callback', async (req, res) => {
       }),
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
-    console.log("TikTok full token response:", tokenRes.data);
-    const { access_token, open_id } = tokenRes.data.data || {};
 
-    // Si no hay open_id, usamos access_token como identificador temporal
-    const identifier = open_id || `token_${access_token?.slice(0, 12)}`;
-
-    return res.redirect(
-      `${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?open_id=${identifier}&token=${access_token}`
-    );
+    const { access_token, open_id } = tokenRes.data || {};
+    // return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?open_id=${open_id}`);
+      //  return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?open_id=${open_id}&token=${access_token}`);
+       if (open_id) {
+  return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?open_id=${open_id}&token=${access_token}`);
+} else {
+  return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/welcome?token=${access_token}`);
+}
 
   } catch (err) {
     console.error("callback err", err.response?.data || err.message);
