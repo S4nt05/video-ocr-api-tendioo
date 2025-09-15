@@ -109,9 +109,9 @@ router.get('/callback', async (req, res) => {
 
     const { access_token, open_id } = tokenRes.data || {}; // TikTok responde en .data.data
     if (open_id) {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard?open_id=${open_id}&access_token=${access_token}`);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard?open_id=${open_id}&token=${access_token}`);
     } else {
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard?access_token=${access_token}`);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard?token=${access_token}`);
     }
 
   } catch (err) {
