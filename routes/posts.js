@@ -157,6 +157,7 @@ const { initUpload, uploadVideoFile, publishVideo } = require('./tiktok');
 const path = require('path');
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
 
 const uploadDir = path.join(__dirname, '../public/uploads/');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
