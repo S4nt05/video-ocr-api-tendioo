@@ -158,7 +158,20 @@ const path = require('path');
 const express = require('express');
 const router = express.Router();
 
-router.post('/upload', async (req, res) => {
+const uploadDir = path.join(__dirname, '../public/uploads/');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+// Configuración de Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const unique = Date.now() + '-' + file.originalname;
+    cb(null, unique);
+  }
+});
+const upload = multer({ storage });
+
+router.post('/upload', upload.single('video'),async (req, res) => {
   try {
     const { access_token, open_id, description, hashtags } = req.body;
     const videoPath = req.file.path; // usando multer por ejemplo
