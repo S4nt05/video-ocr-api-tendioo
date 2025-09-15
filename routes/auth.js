@@ -107,7 +107,7 @@ router.get('/callback', async (req, res) => {
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
 
-    const { access_token, open_id } = tokenRes.data.data || {}; // TikTok responde en .data.data
+    const { access_token, open_id } = tokenRes.data || {}; // TikTok responde en .data.data
     if (open_id) {
       return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard?open_id=${open_id}&token=${access_token}`);
     } else {
