@@ -21,6 +21,10 @@ app.use(express.urlencoded({ extended: true }));
 // Health check — imprescindible para Render/Railway
 app.get('/', (req, res) => res.json({ ok: true, service: 'tendioo-backend' }));
 
+console.log('NODE_ENV', process.env.NODE_ENV);
+console.log('PWD', process.cwd());
+console.log('Files in ./routes', require('fs').readdirSync('./routes'));
+
 // Montamos las rutas en prefijos claros
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postsRoutes);
