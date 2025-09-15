@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const { access_token } = req.query;
-    const response = await axios.get('https://open-api.tiktok.com/v2/message/list/', {
+    const response = await axios.get('https://open.tiktokapis.com/v2/inbox/conversation/list/', {
       headers: { 'Authorization': `Bearer ${access_token}` }
     });
     res.json(response.data);
