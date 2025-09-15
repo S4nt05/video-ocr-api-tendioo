@@ -120,4 +120,22 @@ router.get('/callback', async (req, res) => {
   }
 });
 
+router.get('/user-info', async (req, res) => {
+  const { token, open_id } = req.query;
+
+  try {
+    const userInfo = await axios.get(
+      `https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name,avatar_url`,
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    res.json(userInfo.data);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+
 module.exports = router;
