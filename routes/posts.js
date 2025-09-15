@@ -47,10 +47,7 @@ const upload = multer({ storage });
 // });
 router.post('/upload', upload.single('video'), async (req, res) => {
   try {
-console.log('NODE_ENV', process.env.NODE_ENV);
-console.log('PWD', process.cwd());
-console.log('Files in ./routes', require('fs').readdirSync('./routes'));
-
+    console.log("req.file : ",req.file," req.body : ",req.body);
 
     if (process.env.USE_TIKTOK_MOCK === "true") {
       return setTimeout(() => {
