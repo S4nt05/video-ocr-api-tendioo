@@ -154,6 +154,7 @@
 
 // module.exports = router;
 const { initUpload, uploadVideoFile, publishVideo } = require('./tiktok');
+const path = require('path');
 const express = require('express');
 const router = express.Router();
 
