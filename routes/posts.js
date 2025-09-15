@@ -5,11 +5,45 @@ const { uploadVideo, publishVideo } = require('../utils/tiktokApi');
 const path = require('path');
 const fs = require('fs');
 
-const router = express.Router();
 const uploadDir = path.join(__dirname, '../public/uploads/');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-const upload = multer({ dest: uploadDir });
 
+// Configuración de Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const unique = Date.now() + '-' + file.originalname;
+    cb(null, unique);
+  }
+});
+const upload = multer({ storage });
+
+// router.post('/upload', upload.single('video'), async (req, res) => {
+//   try {
+//     if (process.env.USE_TIKTOK_MOCK === "true") {
+//       return setTimeout(() => {
+//         res.json({
+//           status: "success",
+//           video_id: "mock12345",
+//           message: "Video subido correctamente (simulación)",
+//           preview_url: "https://placekitten.com/400/300"
+//         });
+//       }, 1500);
+//     }
+
+//     const { description, access_token, open_id } = req.body;
+//     const file = req.file;
+//     if (!file) return res.status(400).json({ error: 'No file' });
+
+//     const videoPath = file.path;
+//     const video_id = await uploadVideo(access_token, videoPath);
+//     const result = await publishVideo(access_token, open_id, video_id, description || '', []);
+//     fs.unlink(videoPath, () => {});
+//     res.json(result);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 router.post('/upload', upload.single('video'), async (req, res) => {
   try {
     if (process.env.USE_TIKTOK_MOCK === "true") {
@@ -23,16 +57,32 @@ router.post('/upload', upload.single('video'), async (req, res) => {
       }, 1500);
     }
 
-    const { description, access_token, open_id } = req.body;
+    const { description, access_token, open_id, hashtags } = req.body;
     const file = req.file;
-    if (!file) return res.status(400).json({ error: 'No file' });
+    if (!file) return res.status(400).json({ error: 'No file uploaded' });
+
+    // Parsear hashtags
+    let hashtagsArray = [];
+    if (hashtags) {
+      try {
+        hashtagsArray = JSON.parse(hashtags);
+      } catch (e) {
+        hashtagsArray = hashtags.split(',').map(h => h.trim());
+      }
+    }
 
     const videoPath = file.path;
+
+    // Subida a TikTok
     const video_id = await uploadVideo(access_token, videoPath);
-    const result = await publishVideo(access_token, open_id, video_id, description || '', []);
+    const result = await publishVideo(access_token, open_id, video_id, description || '', hashtagsArray);
+
+    // Borrar archivo temporal
     fs.unlink(videoPath, () => {});
+
     res.json(result);
   } catch (err) {
+    console.error('Upload error:', err);
     res.status(500).json({ error: err.message });
   }
 });
